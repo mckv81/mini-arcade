@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.json">
   <title>Mind Arcade</title>
   <style>
     :root {
@@ -104,8 +103,8 @@
 
     /* Image Avatar Display */
     #avatar-container {
-      width: 140px;
-      height: 140px;
+      width: 150px;
+      height: 150px;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -237,7 +236,7 @@
 
   <main id="stage">
     <div id="avatar-container">
-      <img id="avatar-img" src="sparks.png" alt="Character Avatar">
+      <img id="avatar-img" src="sparks.png.PNG" alt="Character Avatar">
     </div>
     <div id="character-name" style="color: var(--orange);">Sparks</div>
     <div id="scenario-text">A math word problem looks completely impossible.</div>
@@ -276,11 +275,11 @@
     }
     function soundFail() { playTone(140, 'sawtooth', 0.4); }
 
-    // Scenarios Matrix with Image File Targets
+    // Scenarios Matrix targeting the .png.PNG filenames
     const scenarios = [
       {
         char: "Sparks",
-        img: "sparks.png",
+        img: "sparks.png.PNG",
         glow: "rgba(255, 140, 0, 0.4)",
         color: "var(--orange)",
         situation: "A math word problem looks completely impossible.",
@@ -293,7 +292,7 @@
       },
       {
         char: "Rumble",
-        img: "rumble.png",
+        img: "rumble.png.PNG",
         glow: "rgba(255, 51, 68, 0.4)",
         color: "var(--red)",
         situation: "Your pencil snapped and tore a hole in your drawing.",
@@ -306,7 +305,7 @@
       },
       {
         char: "Slump",
-        img: "slump.png",
+        img: "slump.png.PNG",
         glow: "rgba(121, 131, 255, 0.4)",
         color: "var(--indigo)",
         situation: "You have to write an opening paragraph for history.",
@@ -335,10 +334,8 @@
     const pauseBtn = document.getElementById('pause-btn');
     const deck = document.getElementById('strategy-deck');
 
-    // Safe fallback if an image is missing or still being uploaded
     avatarImg.onerror = () => {
-      avatarImg.style.display = 'none';
-      charName.innerText = scenarios[currentIdx].char + " (Image Loading)";
+      console.log("Image load fallback triggered");
     };
 
     function loadScenario(idx) {
@@ -392,9 +389,9 @@
       clearInterval(timer);
       soundBrake();
 
-      // Switch to Echo (The Observer)
+      // Switch to Echo
       avatarImg.classList.remove('avatar-shake');
-      avatarImg.src = 'echo.png';
+      avatarImg.src = 'echo.png.PNG';
       avatarImg.style.filter = 'drop-shadow(0 0 20px rgba(0, 245, 212, 0.5))';
 
       charName.innerText = 'Echo (Observer)';
@@ -437,12 +434,7 @@
       }
     }
 
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-
-    // Launch
+    // Launch Game
     loadScenario(0);
   </script>
 </body>
