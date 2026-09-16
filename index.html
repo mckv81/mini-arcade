@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mind Arcade</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --border: #30363d;
+      --teal: #00f5d4;
+      --orange: #ff8c00;
+      --red: #ff3344;
+      --indigo: #7983ff;
+      --text: #f0f6fc;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      user-select: none; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Stability Gauge */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    .gauge-container {
+      flex: 1;
+      margin-right: 16px;
+    }
+
+    .gauge-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .meter-track {
+      width: 100%;
+      height: 10px;
+      background: #21262d;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    #meter-fill {
+      width: 100%;
+      height: 100%;
+      background: var(--teal);
+      transition: width 0.3s linear, background-color 0.3s ease;
+    }
+
+    .score-badge {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--teal);
+      font-size: 14px;
+    }
+
+    /* Main Stage */
+    #stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      position: relative;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    /* Image Avatar Display */
+    #avatar-container {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 16px rgba(0, 245, 212, 0.3));
+      transition: transform 0.25s ease, filter 0.25s ease;
+    }
+
+    .avatar-shake {
+      animation: shake 0.3s infinite ease-in-out;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      20% { transform: translate(-2px, -1px) rotate(-2deg); }
+      40% { transform: translate(-1px, 2px) rotate(1deg); }
+      60% { transform: translate(2px, 1px) rotate(0deg); }
+      80% { transform: translate(1px, -1px) rotate(2deg); }
+      100% { transform: translate(1px, 1px) rotate(0deg); }
+    }
+
+    #character-name {
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    #scenario-text {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 8px;
+      min-height: 44px;
+    }
+
+    #thought-loop {
+      font-size: 13px;
+      font-style: italic;
+      color: #c9d1d9;
+      background: rgba(0,0,0,0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      display: inline-block;
+      max-width: 90%;
+    }
+
+    /* Metacognitive Brake Bar */
+    #pause-btn {
+      margin: 16px 0 12px 0;
+      width: 100%;
+      background: #238636;
+      color: #ffffff;
+      border: none;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(35, 134, 54, 0.4);
+      display: block;
+    }
+
+    #pause-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Strategy Deck */
+    #strategy-deck {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .orb-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      line-height: 1.3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .orb-btn:active {
+      background: #21262d;
+    }
+
+    .orb-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 800;
+      background: #30363d;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="gauge-container">
+      <div class="gauge-label">
+        <span>Stability</span>
+        <span id="meter-num">100%</span>
+      </div>
+      <div class="meter-track">
+        <div id="meter-fill"></div>
+      </div>
+    </div>
+    <div class="score-badge">💎 <span id="score">0</span></div>
+  </header>
+
+  <main id="stage">
+    <div id="avatar-container">
+      <img id="avatar-img" src="sparks.png.PNG" alt="Character Avatar">
+    </div>
+    <div id="character-name" style="color: var(--orange);">Sparks</div>
+    <div id="scenario-text">A math word problem looks completely impossible.</div>
+    <div id="thought-loop">"If I get this wrong, I fail the semester!"</div>
+  </main>
+
+  <button id="pause-btn">🛑 Hit The Brakes (Observe)</button>
+
+  <div id="strategy-deck"></div>
+
+  <script>
+    // Audio Synthesizer (Built-in iOS web audio)
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playTone(freq, type, duration) {
+      try {
+        if (ctx.state === 'suspended') ctx.resume();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function soundAlert() { playTone(300, 'sawtooth', 0.2); }
+    function soundBrake() { playTone(520, 'sine', 0.6); }
+    function soundSuccess() { 
+      playTone(440, 'triangle', 0.15); 
+      setTimeout(() => playTone(880, 'triangle', 0.3), 150); 
+    }
+    function soundFail() { playTone(140, 'sawtooth', 0.4); }
+
+    // Scenarios Matrix targeting the .png.PNG filenames
+    const scenarios = [
+      {
+        char: "Sparks",
+        img: "sparks.png.PNG",
+        glow: "rgba(255, 140, 0, 0.4)",
+        color: "var(--orange)",
+        situation: "A math word problem looks completely impossible.",
+        thought: "If I get this wrong, I fail the whole semester!",
+        orbs: [
+          { text: "Break it down: draw a picture of the numbers first.", type: "Micro-Step", correct: true },
+          { text: "Guess C and close your notebook.", type: "Impulse", correct: false },
+          { text: "Keep panicking until someone does it for you.", type: "Impulse", correct: false }
+        ]
+      },
+      {
+        char: "Rumble",
+        img: "rumble.png.PNG",
+        glow: "rgba(255, 51, 68, 0.4)",
+        color: "var(--red)",
+        situation: "Your pencil snapped and tore a hole in your drawing.",
+        thought: "Everything I make is garbage! I'm tearing this up!",
+        orbs: [
+          { text: "Rip the whole page into shreds.", type: "Impulse", correct: false },
+          { text: "10-Second Breath: Can this rip become a shadow or background detail?", type: "Reframe", correct: true },
+          { text: "Slam your desk and walk away.", type: "Impulse", correct: false }
+        ]
+      },
+      {
+        char: "Slump",
+        img: "slump.png.PNG",
+        glow: "rgba(121, 131, 255, 0.4)",
+        color: "var(--indigo)",
+        situation: "You have to write an opening paragraph for history.",
+        thought: "I don't know where to start. My brain doesn't work.",
+        orbs: [
+          { text: "Put your head on your desk and give up.", type: "Impulse", correct: false },
+          { text: "Wait for tomorrow to figure it out.", type: "Impulse", correct: false },
+          { text: "Ugly First Draft: Write 3 messy sentences without backspacing.", type: "Micro-Step", correct: true }
+        ]
+      }
+    ];
+
+    let currentIdx = 0;
+    let stability = 100;
+    let score = 0;
+    let timer = null;
+    let isPaused = false;
+
+    const meterFill = document.getElementById('meter-fill');
+    const meterNum = document.getElementById('meter-num');
+    const scoreDisplay = document.getElementById('score');
+    const avatarImg = document.getElementById('avatar-img');
+    const charName = document.getElementById('character-name');
+    const scenarioText = document.getElementById('scenario-text');
+    const thoughtLoop = document.getElementById('thought-loop');
+    const pauseBtn = document.getElementById('pause-btn');
+    const deck = document.getElementById('strategy-deck');
+
+    avatarImg.onerror = () => {
+      console.log("Image load fallback triggered");
+    };
+
+    function loadScenario(idx) {
+      const s = scenarios[idx];
+      isPaused = false;
+      stability = 100;
+      updateMeter();
+
+      avatarImg.style.display = 'block';
+      avatarImg.src = s.img;
+      avatarImg.style.filter = `drop-shadow(0 0 20px ${s.glow})`;
+      avatarImg.classList.add('avatar-shake');
+
+      charName.innerText = s.char;
+      charName.style.color = s.color;
+      scenarioText.innerText = s.situation;
+      thoughtLoop.innerText = `"${s.thought}"`;
+
+      pauseBtn.style.display = 'block';
+      deck.style.display = 'none';
+      deck.innerHTML = '';
+
+      soundAlert();
+      startDrain();
+    }
+
+    function startDrain() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        if (!isPaused && stability > 0) {
+          stability -= 2;
+          updateMeter();
+          if (stability <= 0) {
+            clearInterval(timer);
+            soundFail();
+            thoughtLoop.innerText = "OVERLOAD! Console Short-Circuited!";
+            setTimeout(() => loadScenario(currentIdx), 2000);
+          }
+        }
+      }, 200);
+    }
+
+    function updateMeter() {
+      meterFill.style.width = stability + '%';
+      meterNum.innerText = stability + '%';
+      meterFill.style.backgroundColor = stability < 35 ? 'var(--red)' : stability < 65 ? 'var(--orange)' : 'var(--teal)';
+    }
+
+    pauseBtn.addEventListener('click', () => {
+      isPaused = true;
+      clearInterval(timer);
+      soundBrake();
+
+      // Switch to Echo
+      avatarImg.classList.remove('avatar-shake');
+      avatarImg.src = 'echo.png.PNG';
+      avatarImg.style.filter = 'drop-shadow(0 0 20px rgba(0, 245, 212, 0.5))';
+
+      charName.innerText = 'Echo (Observer)';
+      charName.style.color = 'var(--teal)';
+      thoughtLoop.innerText = "Notice the thought. Pick your counter-tool:";
+
+      pauseBtn.style.display = 'none';
+      renderOrbs();
+    });
+
+    function renderOrbs() {
+      deck.style.display = 'flex';
+      const s = scenarios[currentIdx];
+      deck.innerHTML = '';
+
+      s.orbs.forEach(orb => {
+        const btn = document.createElement('button');
+        btn.className = 'orb-btn';
+        btn.innerHTML = `<span class="orb-tag">${orb.type}</span> <span>${orb.text}</span>`;
+        btn.onclick = () => selectOrb(orb);
+        deck.appendChild(btn);
+      });
+    }
+
+    function selectOrb(orb) {
+      if (orb.correct) {
+        soundSuccess();
+        score += 100;
+        scoreDisplay.innerText = score;
+        thoughtLoop.innerText = "CLARITY UNLOCKED! Strategy Worked.";
+        setTimeout(() => {
+          currentIdx = (currentIdx + 1) % scenarios.length;
+          loadScenario(currentIdx);
+        }, 1200);
+      } else {
+        soundFail();
+        stability = Math.max(0, stability - 30);
+        updateMeter();
+        thoughtLoop.innerText = "Impulse backfired! Resetting focus...";
+      }
+    }
+
+    // Launch Game
+    loadScenario(0);
+  </script>
+</body>
+</html>
